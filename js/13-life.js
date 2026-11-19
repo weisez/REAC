@@ -156,7 +156,7 @@ route("story/:id", (id) => {
   <section class="sec"><div class="wrap two"><div>
     ${s.draft ? `<p><span class="chip warn">Черновик: виден только вам</span></p>` : ""}
     ${s.img ? `<figure class="evp reveal"><img src="${E(s.img)}" alt="${E(s.title)}"></figure>` : ""}
-    <div class="prose reveal">${s.body && s.body.replace(/<[^>]*>/g, "").trim() ? H(s.body) : `<p>${E(s.summary || "")}</p>`}</div>
+    <div class="prose reveal" data-edo="stories:${s.id}">${s.body && s.body.replace(/<[^>]*>/g, "").trim() ? H(s.body) : `<p>${E(s.summary || "")}</p>`}</div>
   </div><div class="aside">
     ${rows.length ? `<div class="box reveal"><h4>О событии</h4><dl class="evi">${rows.map((r) => `<div><dt>${r[0]}</dt><dd>${E(r[1])}</dd></div>`).join("")}</dl></div>` : ""}
     <a class="btn ghost" href="#/life">Все истории</a>

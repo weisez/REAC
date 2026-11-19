@@ -13,6 +13,10 @@ const MAP_KINDS = {
   station: "Area Command", bridge: "Мост", port: "Порт", district: "Район", town: "Населённый пункт",
   industry: "Промзона", mountain: "Горы", landmark: "Объект",
 };
+const MAP_KINDS0 = Object.assign({}, MAP_KINDS);
+const MAPT = { kicker: "Департамент", title: "Зоны ответственности", panelTitle: "Зоны ответственности", home: "наша зона", objects: "Объекты в зоне", zoneH: "Зона ответственности", btnUnits: "Подразделения Area Command", btnStaff: "Личный состав", back: "← Все зоны", more: "Читать полностью", less: "Свернуть", nodesc: "Описание пока не добавлено.", hint: "Ctrl + колесо мыши — масштаб · перетаскивание — сдвиг", kinds: {} };
+const mt = (k) => ((S && S.meta && S.meta.mapTxt) || {})[k] || MAPT[k];
+const para = (x) => String(x || "").split(/\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${E(s)}</p>`).join("");
 const MAP_ICON = {
   bridge: '<path d="M-9 5H9M-9 5Q0 -11 9 5M-5 5V0M0 5V-4M5 5V0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
   port: '<path d="M0 -8a2 2 0 1 0 .01 0M0 -5V8M-6 2Q-6 8 0 8Q6 8 6 2M-4 -1H4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -23,16 +27,18 @@ const MAP_ICON = {
   landmark: '<path d="M0 -8L8 0L0 8L-8 0Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
   station: '<path d="M0 -9L8 -6V1C8 6 4 8.5 0 10C-4 8.5 -8 6 -8 1V-6Z" fill="currentColor"/><path d="M0 -4.5L1.4 -1.4L4.8 -1.1L2.2 1L3 4.3L0 2.5L-3 4.3L-2.2 1L-4.8 -1.1L-1.4 -1.4Z" fill="#14100a"/>',
 };
-/* стартовые контуры и объекты: примерная раскладка по карте San Andreas (картинка 541×937, умноженная на 1000/541).
-   Это отправная точка: контуры и маркеры двигаются в режиме правки. */
-const sc = (a) => a.map((q) => [Math.round(q[0] * 1.8484 * 10) / 10, Math.round(q[1] * 1.8484 * 10) / 10]);
-const MAP_DEF = { img: "img/map-sanfierro.webp", w: 1000, h: 1732, rings: {
-  z1: [sc([[18, 250], [240, 250], [320, 262], [350, 340], [250, 410], [190, 470], [18, 400]])],
-  z2: [sc([[18, 400], [190, 470], [250, 410], [330, 440], [320, 560], [18, 590]])],
-  z3: [sc([[18, 28], [175, 28], [185, 115], [110, 145], [64, 150], [64, 250], [18, 250]]), sc([[18, 760], [200, 740], [320, 770], [300, 925], [18, 925]])],
+/* стартовая раскладка на карте Лас-Вентураса (картинка img/map-lv.png, 1014×525, ширина «мира» = 1000).
+   Контуры и маркеры — ЗАГЛУШКИ: двигаются мышью в режиме правки. */
+const sc = (a) => a.map((q) => [Math.round(q[0] * 0.986 * 10) / 10, Math.round(q[1] * 0.986 * 10) / 10]);
+const MAP_DEF = { img: "img/map-lv.png", w: 1000, h: 518, rings: {
+  z1: [sc([[815, 230], [975, 230], [975, 440], [815, 440]])],
+  z2: [sc([[600, 120], [815, 120], [815, 440], [600, 440]])],
+  z3: [sc([[270, 120], [560, 120], [560, 470], [270, 470]])],
 } };
 const POI_DEF = [
-  { id: "p-st1", kind: "station", zone: "z1", name: "Roca Escalante Area Command", x: 500, y: 340, text: "Заглушка: описание объекта будет добавлено." },
+  { id: "p-st1", kind: "station", zone: "z1", name: "Roca Escalante Area Command", x: 878, y: 330, text: "Заглушка: описание объекта будет добавлено." },
+  { id: "p-st2", kind: "station", zone: "z2", name: "Соседний Area Command (заглушка)", x: 690, y: 290, text: "Заглушка." },
+  { id: "p-st3", kind: "landmark", zone: "z3", name: "Пригородный участок (заглушка)", x: 410, y: 295, text: "Заглушка." },
 ];
 const MAP_INTRO = "Карта показывает зоны ответственности LVMPD. Выберите Area Command, объект или зону: контур подсветится, справа появится описание.";
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -43,7 +49,8 @@ function mapDims() {
   MAP_AR = Math.max(0.8, MAP_W / MAP_H); MAP_FW = Math.max(MAP_W, MAP_H * MAP_AR);
 }
 function mapEnsure() {
-  if (!S.map || typeof S.map !== "object") S.map = clone(MAP_DEF);
+  if (!S.map || typeof S.map !== "object" || /karta-om73|map-sanfierro/.test(S.map.img || "")) { S.map = clone(MAP_DEF); if (!Array.isArray(S.pois) || S.pois.every((p) => /^p-st\d$/.test(p.id))) S.pois = clone(POI_DEF); } /* старый фон Сан-Фиерро заменяется картой Лас-Вентураса */
+  Object.assign(MAP_KINDS, MAP_KINDS0); const kd = ((S.meta || {}).mapTxt || {}).kinds; if (kd) Object.keys(kd).forEach((k) => { if (kd[k] && MAP_KINDS0[k]) MAP_KINDS[k] = kd[k]; });
   if (!S.map.rings || typeof S.map.rings !== "object") S.map.rings = {};
   if (!Array.isArray(S.pois)) S.pois = clone(POI_DEF);
   mapDims();
@@ -114,7 +121,7 @@ function mapMarkup() {
     <svg id="mapsvg" viewBox="0 0 ${MAP_FW} ${MAP_FW / MAP_AR}" role="group" aria-label="Карта зон ответственности"><g id="mbase"></g><g id="mzones"></g><g id="mhandles"></g><g id="mpois"></g></svg>
     <div class="mtip" id="mtip" hidden></div>
     <div class="mctl"><button type="button" data-mz="1" aria-label="Приблизить" title="Приблизить">+</button><button type="button" data-mz="-1" aria-label="Отдалить" title="Отдалить">−</button><button type="button" data-mz="0" aria-label="Вся карта" title="Вся карта">⌂</button></div>
-    <div class="mhint" id="mhint">Ctrl + колесо мыши — масштаб · перетаскивание — сдвиг</div></div>
+    <div class="mhint" id="mhint">${esc(mt("hint"))}</div></div>
     <div class="mleg" id="mleg"></div>
     <div class="mtool ed"><button type="button" data-mt="addp">+ Объект</button><button type="button" data-mt="addr">+ Контур выбранной зоны</button><button type="button" data-mt="bg">Фон карты</button><button type="button" data-mt="reset">Вернуть исходную схему</button><span class="note">Тяните маркеры и точки контура. Двойной щелчок по линии добавляет точку, по точке удаляет её.</span></div>
   </div><aside class="mpanel aside" id="mpanel" aria-live="polite"></aside></div>`;
@@ -124,8 +131,8 @@ route("zones/:id", (id) => mapPage(id), "zones");
 function mapPage(id) {
   mapEnsure();
   const m = S.meta;
-  return { title: "Зоны ответственности", init: (app) => mapInit(app, id), html: `${phead("Департамент", "Зоны ответственности", E(m.mapIntro || MAP_INTRO), m.deptImg || m.hero, null, cropOf(m, m.deptImg ? "deptImg" : "hero"))}
-  <section class="sec mapsec"><div class="wrap xl">${mapMarkup()}<button class="ed addb" data-ed="meta:-">✎ Обложка и вступление раздела</button></div></section>` };
+  return { title: "Зоны ответственности", init: (app) => mapInit(app, id), html: `${phead(mt("kicker"), mt("title"), E(m.mapIntro || MAP_INTRO), m.deptImg || m.hero, null, cropOf(m, m.deptImg ? "deptImg" : "hero"))}
+  <section class="sec mapsec"><div class="wrap xl">${mapMarkup()}<button class="ed addb" data-ed="maptxt:-">✎ Тексты, подписи и обложка раздела</button></div></section>` };
 }
 /* --- рисование --- */
 function paintZones() {
@@ -201,25 +208,25 @@ function mapPanel() {
   let h = "";
   if (z && (!p || p.kind === "station")) {
     const st = p || S.pois.find((q) => q.zone === z.id && q.kind === "station"), others = S.pois.filter((q) => q.zone === z.id && q.kind !== "station");
-    h = `<div class="mp-h" style="--zc:${zColor(z, zi)}"><span class="mp-n">${E(z.n || "")}</span><div><h3>${E(z.name)}</h3><div class="sub">${E(z.station || "")}${z.home ? " · наша зона" : ""}</div></div></div>
+    h = `<div class="mp-h" data-edo="zones:${esc(z.id)}" style="--zc:${zColor(z, zi)}"><span class="mp-n">${E(z.n || "")}</span><div><h3>${E(z.name)}</h3><div class="sub">${E(z.station || "")}${z.home ? " · " + mt("home") : ""}</div></div></div>
       ${z.img ? `<div class="mp-img">${fimg(z.img, cropOf(z, "img"), z.name)}</div>` : ""}
-      ${st && st.text ? `<p class="mp-lead">${E(st.text)}</p>` : ""}
-      <div class="mp-txt" id="mptxt"><p>${E(z.text || "")}</p></div><button type="button" class="mp-more" id="mpmore" hidden>Читать полностью</button>
-      ${others.length ? `<h4 class="mp-sub">Объекты в зоне</h4><div class="mos">${chips(others)}</div>` : ""}
-      ${z.home ? `<p class="mp-links"><a class="btn ghost" href="#/units">Подразделения станции</a> <a class="btn ghost" href="#/staff">Личный состав</a></p>` : ""}
-      <p class="mp-links"><button type="button" class="mp-back" data-sp="">← Все зоны</button></p>${eb("zones", z.id)}`;
+      ${st && st.text ? `<div class="mp-lead" data-edo="pois:${esc(st.id)}">${para(st.text)}</div>` : ""}
+      <div class="mp-txt" id="mptxt" data-edo="zones:${esc(z.id)}">${para(z.text)}</div><button type="button" class="mp-more" id="mpmore" hidden>${E(mt("more"))}</button>
+      ${others.length ? `<h4 class="mp-sub">${E(mt("objects"))}</h4><div class="mos">${chips(others)}</div>` : ""}
+      ${z.home ? `<p class="mp-links"><a class="btn ghost" href="#/units">${E(mt("btnUnits"))}</a> <a class="btn ghost" href="#/staff">${E(mt("btnStaff"))}</a></p>` : ""}
+      <p class="mp-links"><button type="button" class="mp-back" data-sp="">${E(mt("back"))}</button></p>${eb("zones", z.id)}`;
   } else if (p) {
-    h = `<div class="mp-h" style="--zc:${z ? zColor(z, zi) : "#8a95a5"}"><span class="mp-ic"><svg viewBox="-11 -11 22 22" aria-hidden="true">${MAP_ICON[p.kind] || MAP_ICON.landmark}</svg></span><div><h3>${E(mTitle(p))}</h3><div class="sub">${esc(MAP_KINDS[p.kind])}</div></div></div>
+    h = `<div class="mp-h" data-edo="pois:${esc(p.id)}" style="--zc:${z ? zColor(z, zi) : "#8a95a5"}"><span class="mp-ic"><svg viewBox="-11 -11 22 22" aria-hidden="true">${MAP_ICON[p.kind] || MAP_ICON.landmark}</svg></span><div><h3>${E(mTitle(p))}</h3><div class="sub">${esc(MAP_KINDS[p.kind])}</div></div></div>
       ${p.img ? `<div class="mp-img">${fimg(p.img, cropOf(p, "img"), p.name)}</div>` : ""}
-      <div class="mp-txt full"><p>${E(p.text || "Описание пока не добавлено.")}</p></div>
-      ${z ? `<h4 class="mp-sub">Зона ответственности</h4><div class="mos"><button type="button" class="mo zone" data-sz="${esc(z.id)}" style="--zc:${zColor(z, zi)}"><b>${E(z.n || "")}</b><span>${E(z.name)}</span><em>${E(z.station || "")}</em></button></div>` : ""}
-      <p class="mp-links"><button type="button" class="mp-back" data-sp="">← Все зоны</button></p>${eb("pois", p.id)}`;
+      <div class="mp-txt full" data-edo="pois:${esc(p.id)}">${para(p.text) || `<p>${E(mt("nodesc"))}</p>`}</div>
+      ${z ? `<h4 class="mp-sub">${E(mt("zoneH"))}</h4><div class="mos"><button type="button" class="mo zone" data-sz="${esc(z.id)}" style="--zc:${zColor(z, zi)}"><b>${E(z.n || "")}</b><span>${E(z.name)}</span><em>${E(z.station || "")}</em></button></div>` : ""}
+      <p class="mp-links"><button type="button" class="mp-back" data-sp="">${E(mt("back"))}</button></p>${eb("pois", p.id)}`;
   } else {
-    h = `<h3 class="mp-title">Зоны ответственности</h3><p class="mp-lead">${E(S.meta.mapIntro || MAP_INTRO)}</p><div class="mzs">${S.zones.map((q, i) => `<button type="button" class="mzc${q.home ? " home" : ""}" data-sz="${esc(q.id)}" style="--zc:${zColor(q, i)}"><b>${E(q.n || "")}</b><span>${E(q.name)}</span><em>${E(q.station || "")}${q.home ? " · наша зона" : ""}</em></button>`).join("")}</div>${S.zones.length ? "" : `<p class="note">Зон пока нет.</p>`}${addb("zones", "Зона")}`;
+    h = `<h3 class="mp-title" data-edo="maptxt:-">${E(mt("panelTitle"))}</h3><div class="mp-lead" data-edo="maptxt:-">${para(S.meta.mapIntro || MAP_INTRO)}</div><div class="mzs">${S.zones.map((q, i) => `<button type="button" class="mzc${q.home ? " home" : ""}" data-sz="${esc(q.id)}" style="--zc:${zColor(q, i)}"><b>${E(q.n || "")}</b><span>${E(q.name)}</span><em>${E(q.station || "")}${q.home ? " · наша зона" : ""}</em></button>`).join("")}</div>${S.zones.length ? "" : `<p class="note">Зон пока нет.</p>`}${addb("zones", "Зона")}`;
   }
   el.innerHTML = ui(h); el.scrollTop = 0;
   const tx = $("#mptxt", el), more = $("#mpmore", el);
-  if (tx && more) { tx.classList.add("clamp"); requestAnimationFrame(() => { if (tx.scrollHeight > tx.clientHeight + 4) { more.hidden = false; more.onclick = () => { const open = tx.classList.toggle("clamp"); more.textContent = open ? "Читать полностью" : "Свернуть"; }; } else tx.classList.remove("clamp"); }); }
+  if (tx && more) { tx.classList.add("clamp"); requestAnimationFrame(() => { if (tx.scrollHeight > tx.clientHeight + 4) { more.hidden = false; more.onclick = () => { const open = tx.classList.toggle("clamp"); more.textContent = open ? mt("more") : mt("less"); }; } else tx.classList.remove("clamp"); }); }
 }
 /* --- правка контуров и маркеров мышью --- */
 function mapDrag(e, onMove, onEnd) {

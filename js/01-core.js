@@ -91,7 +91,7 @@ function countUp(el) {
 /* global image fallback */
 addEventListener("error", (e) => { const i = e.target; if (i && i.tagName === "IMG") { i.style.display = "none"; const p = i.closest(".ph"); if (p) p.classList.add("noimg"); } }, true);
 /* modal helpers */
-function ovOpen(id, html) { let o = $("#" + id); if (!o) { o = document.createElement("div"); o.className = "ov"; o.id = id; document.body.appendChild(o); } o.innerHTML = html; o.classList.add("open"); return o; }
+function ovOpen(id, html) { let o = $("#" + id); if (!o) { o = document.createElement("div"); o.className = "ov"; o.id = id; } document.body.appendChild(o); /* каждое новое окно — поверх остальных (в т.ч. «Библиотека» поверх редактора) */ o.innerHTML = html; o.classList.add("open"); return o; }
 const ovClose = (id) => { const o = $("#" + id); if (o) { o.classList.remove("open"); o.innerHTML = ""; } };
 /* Окна с вводом (редактор, надписи, «Опубликовать», «Данные») не закрываются кликом по фону: случайный клик не должен стирать набранное.
    Вместо закрытия окно коротко «подрагивает» и подсвечивается. Закрыть: ✕, «Отмена» или Esc. Тянуть выделение из окна наружу не считается кликом по фону. */

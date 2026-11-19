@@ -28,7 +28,7 @@ route("", () => {
     ${cap ? `<div class="reveal" style="position:relative">${phot(cap)}${eb("people", cap.id)}</div>` : ""}
     <div class="reveal"><div class="eb">Командующий Area Command</div><h2 style="margin:8px 0 22px">${cap ? E(cap.rank + " " + cap.name) : ""}</h2>
       <blockquote class="q" style="margin:0 0 26px">«${E(m.motto)}»<cite>${E(m.mottoBy)}</cite></blockquote>
-      <div class="prose">${H(m.intro)}</div><p><a class="btn ghost" href="#/about">Об Area Command</a></p></div>
+      <div class="prose" data-edo="meta:-">${H(m.intro)}</div><p><a class="btn ghost" href="#/about">Об Area Command</a></p></div>
   </div>${OWN ? `<div class="wrap">${`<button class="ed addb" data-ed="meta:-">✎ Настройки сайта и главной</button>`}</div>` : ""}</section>
   ${lifeHome()}
   <section class="sec"><div class="wrap">${sech("Структура", "Подразделения Area Command")}
@@ -48,14 +48,14 @@ route("about", () => {
   const m = S.meta;
   return { title: "О станции", init: roomsInit, html: `
   ${phead("Об Area Command", "Roca Escalante Area Command", E(m.org), m.hero, null, cropOf(m, "hero"))}
-  <section class="sec"><div class="wrap two"><div class="prose reveal">${H(m.intro)}${H(m.about)}<button class="ed addb" data-ed="meta:-">✎ Править текст</button></div>
+  <section class="sec"><div class="wrap two"><div class="prose reveal" data-edo="meta:-">${H(m.intro)}${H(m.about)}<button class="ed addb" data-ed="meta:-">✎ Править текст</button></div>
     <div class="aside"><div class="box reveal"><h4>Адрес</h4><p style="margin:0">${E(m.address)}</p></div><div class="box reveal"><h4>Руководство</h4>${S.people.filter((p) => p.unit === "cmd").map(prow).join("")}<a class="btn ghost" href="#/staff">Весь состав</a></div></div></div></section>
   <section class="sec alt"><div class="wrap">${sech("Хронология", "История станции")}<div class="tl">${S.timeline.map((t) => `<div class="tli"><time>${E(t.year)}</time><div><h3>${E(t.title)}</h3><p>${E(t.text)}</p></div>${eb("timeline", t.id)}${mvb("timeline", t.id)}</div>`).join("")}</div>${addb("timeline", "Событие")}</div></section>
   <section class="sec"><div class="wrap">${sech("Area Command изнутри", "Здание и помещения", `<p class="lead">${E(m.building || "")}</p>`)}${roomsHTML()}${addb("rooms", "Помещение")}</div></section>
   <section class="sec alt"><div class="wrap">${sech("Департамент", "Зоны ответственности LVMPD")}
     <p class="reveal" style="margin:-6px 0 26px"><a class="btn" href="#/zones">Открыть интерактивную карту зон →</a></p>
     <div class="grid" style="gap:18px">${S.zones.map((z) => `<div class="card zc reveal${z.home ? " hl" : ""}"><div class="zi">${fimg(z.img, cropOf(z, "img"), "")}</div><div class="pad"><h3><span>${E(z.n)}.</span> ${E(z.name)}</h3><div class="sub">${E(z.station)}${z.home ? " · наша зона" : ""}</div><p style="font:400 15px/1.7 var(--ff-s)">${E(z.text)}</p></div>${eb("zones", z.id)}</div>`).join("")}</div>
-    <div class="grid g2" style="gap:44px;margin-top:54px"><div class="prose reveal">${H(S.deptText)}</div><div class="reveal"><h3 style="margin-bottom:16px;color:var(--brass2)">Структура департамента</h3>${treeHTML(S.dept)}<button class="ed addb" data-ed="dept:-">✎ Править структуру</button></div></div></div></section>` };
+    <div class="grid g2" style="gap:44px;margin-top:54px"><div class="prose reveal" data-edo="dept:-">${H(S.deptText)}</div><div class="reveal"><h3 style="margin-bottom:16px;color:var(--brass2)">Структура департамента</h3>${treeHTML(S.dept)}<button class="ed addb" data-ed="dept:-">✎ Править структуру</button></div></div></div></section>` };
 }, "about");
 
 const treeHTML = (n) => `<ul class="tree"><li class="${n.hl ? "hl" : ""}"><b>${E(n.name)}</b>${n.kids ? `<ul>${n.kids.map((k) => treeHTML(k).replace(/^<ul class="tree">|<\/ul>$/g, "")).join("")}</ul>` : ""}</li></ul>`;
@@ -95,7 +95,7 @@ route("unit/:id", (id) => {
   return { title: u.name, html: `${phead(E(u.en), E(u.name), E(u.tag), u.banner, `<a href="#/">Главная</a> / <a href="#/units">Подразделения</a>`, cropOf(u, "banner"))}
   <section class="sec"><div class="wrap two"><div>
     ${u.quote ? `<blockquote class="q reveal" style="margin:0 0 36px">«${E(u.quote)}»<cite>${E(u.quoteBy || "")}</cite></blockquote>` : ""}
-    <div class="prose reveal">${H(u.summary)}</div>
+    <div class="prose reveal" data-edo="units:${u.id}">${H(u.summary)}</div>
     ${u.gallery && u.gallery.length ? `<div class="gal reveal">${u.gallery.map((g) => `<img src="${E(g)}" alt="" loading="lazy">`).join("")}</div>` : ""}
   </div><div class="aside">
     <div class="box reveal"><h4>Состав</h4>${r.map((x) => `<div class="note" style="margin:6px 0 3px">${E(x.role)}</div>${prow(x.p)}`).join("") || `<p class="note">Состав не указан.</p>`}</div>
@@ -131,10 +131,10 @@ route("career", () => {
     <div class="grid g2" style="margin-top:36px;gap:36px"><div class="reveal"><h3 style="margin-bottom:12px;color:var(--brass2)">Требования к кандидату</h3><ul class="chk">${(v.req || []).map((c) => `<li>${E(c)}</li>`).join("")}</ul></div><div class="reveal"><h3 style="margin-bottom:12px;color:var(--brass2)">Подача заявления</h3><p class="lead" style="font-size:16px">Заявление в старший состав подаётся строго по формуляру, пока смотр открыт.</p><a class="btn" href="#/form/app-staff">Открыть формуляр</a></div></div>`
     : `<div class="vac-msg reveal ${st}"><div class="vm-i">${st === "soon" ? "⌛" : "—"}</div><div><b>${E(VS[st][0])}</b><p>${E(v.msg || VM[st] || "")}</p></div></div>`;
   return { title: "Карьера", html: `${phead("Карьера в LVMPD", "Служба в полиции Лас-Вентураса", "", S.meta.careerImg, null, cropOf(S.meta, "careerImg"))}
-  <section class="sec"><div class="wrap two"><div class="prose reveal">${H(S.careerIntro)}</div><div class="aside"><div class="box reveal"><h4>Roca Escalante Area Command</h4><p style="margin:0;font-size:14.5px;color:var(--mute)">Служба в Roca Escalante Area Command — это работа в одном из районов Лас-Вентураса: чёткая структура подготовки, понятная карьерная вертикаль и высокие профессиональные стандарты.</p></div><a class="btn" href="#/forms">Заявления и формуляры</a></div></div></section>
+  <section class="sec"><div class="wrap two"><div class="prose reveal" data-edo="career:-">${H(S.careerIntro)}</div><div class="aside"><div class="box reveal"><h4>Roca Escalante Area Command</h4><p style="margin:0;font-size:14.5px;color:var(--mute)">Служба в Roca Escalante Area Command — это работа в одном из районов Лас-Вентураса: чёткая структура подготовки, понятная карьерная вертикаль и высокие профессиональные стандарты.</p></div><a class="btn" href="#/forms">Заявления и формуляры</a></div></div></section>
   <section class="sec alt"><div class="wrap">${sech("Поступление", "Путь в полицию")}<div class="steps reveal">${S.steps.map((s) => `<div class="step"><h4>${E(s.t)}</h4><p>${E(s.d)}</p></div>`).join("")}</div></div></section>
   <section class="sec"><div class="wrap">${sech("Звания", "Карьерная лестница")}<div class="ladder">${groups.map((g) => `<div class="lg reveal"><h3>${E(g)}</h3>${S.ranks.filter((r) => r.group === g).map((r) => `<div class="rank" data-rank tabindex="0"><b>${E(r.name)}</b><div class="d"><div>${E(r.desc)}</div></div>${eb("ranks", r.id)}</div>`).join("")}</div>`).join("")}</div>${addb("ranks", "Звание")}
-    <div class="prose reveal" style="margin-top:50px">${H(S.specs)}</div></div></section>
+    <div class="prose reveal" style="margin-top:50px" data-edo="career:-">${H(S.specs)}</div><button class="ed addb" data-ed="career:-">✎ Тексты раздела: вступление, V. направления, путь поступления</button></div></section>
   <section class="sec alt"><div class="wrap">${sech("Кадровый смотр", E(v.title || "Вакансии"), `<div><span class="chip ${VS[st][1]}">${E(VS[st][0])}</span></div>`)}${body}
     <button class="ed addb" data-ed="vacancies:-">✎ Править набор</button></div></section>` };
 }, "career");

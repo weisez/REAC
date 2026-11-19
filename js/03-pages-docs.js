@@ -56,7 +56,7 @@ route("doc/:id", (id) => {
       <div class="ptop"><div class="st">★ ROCA ESCALANTE AREA COMMAND — LVMPD ★</div><b>${E(m.name)}</b><span>${E(m.org)} · ${E(m.address)}</span></div>
       <h1>${E(d.title)}</h1>
       ${d.meta && d.meta.length ? `<div class="meta">${d.meta.map((x) => `<div><span>${E(x[0])}</span>${E(x[1])}</div>`).join("")}</div>` : ""}
-      <div class="prose">${H(d.body)}</div>
+      <div class="prose" data-edo="docs:${d.id}">${H(d.body)}</div>
       ${d.quote ? `<div class="q2">${E(d.quote)}</div>` : ""}
       ${sg ? `<div class="sigs">${sg}</div>` : ""}
       ${d.dist ? `<div class="dist">Рассылка: ${E(d.dist)}</div>` : ""}

@@ -42,9 +42,10 @@ function ownerBar() {
   const on = OWN && !VIEW();
   document.body.classList.toggle("own", on);
   if (!on) return;
-  $("#ownbar").innerHTML = `<b>Режим владельца</b><button id="b-edit">Режим правки: выкл</button><button id="b-set" class="ed">Настройки сайта</button><button id="b-nav" class="ed">Меню</button><button id="b-foot" class="ed">Подвал</button><span class="sp"></span><button id="b-media">Медиа</button><button id="b-pub" class="pri">Опубликовать</button><button id="b-data">Данные</button>`;
+  $("#ownbar").innerHTML = `<b>Режим владельца</b><button id="b-edit">Режим правки: выкл</button><button id="b-set" class="ed">Настройки сайта</button><button id="b-col">Цвета</button><button id="b-nav" class="ed">Меню</button><button id="b-foot" class="ed">Подвал</button><span class="sp"></span><button id="b-media">Медиа</button><button id="b-pub" class="pri">Опубликовать</button><button id="b-data">Данные</button>`;
   $("#b-edit").onclick = (e) => { const v = document.body.classList.toggle("editing"); e.currentTarget.classList.toggle("on", v); e.currentTarget.textContent = "Режим правки: " + (v ? "вкл" : "выкл"); };
   $("#b-set").onclick = () => openEd("meta");
+  $("#b-col").onclick = thOpen;
   $("#b-nav").onclick = () => openEd("nav");
   $("#b-foot").onclick = () => openEd("footer");
   $("#b-media").onclick = () => mlOpen(null);
@@ -117,7 +118,7 @@ addEventListener("resize", stickyFit);
   theme();
   try { await ownerCheck(); } catch (e) {}
   try { await loadData(); } catch (e) { $("#app").innerHTML = `<section class="sec"><div class="wrap"><h2>Не удалось загрузить данные</h2><p class="lead">${esc(e.message)}</p></div></section>`; return; }
-  chrome(); ownerBar(); stickyFit();
+  applyTheme(); chrome(); ownerBar(); stickyFit();
   addEventListener("hashchange", () => { ROOM_I = 0; render(); });
   const sk = $(".skip"); if (sk) sk.addEventListener("click", (e) => { e.preventDefault(); $("#app").focus(); });
   render(); stickyWatch();

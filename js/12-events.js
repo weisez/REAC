@@ -226,7 +226,7 @@ route("event/:id", (id) => {
   <section class="sec"><div class="wrap two"><div>
     ${e.draft ? `<p><span class="chip warn">Черновик: виден только вам</span></p>` : ""}
     ${e.banner ? `<figure class="evp reveal"><img src="${E(e.banner)}" alt="${E(e.title)}"></figure>` : ""}
-    <div class="prose reveal">${H(e.body)}</div>
+    <div class="prose reveal" data-edo="events:${e.id}">${H(e.body)}</div>
   </div><div class="aside">
     <div class="box reveal"><h4>Подробности</h4>
       ${rows.length ? `<dl class="evi">${rows.map((r) => `<div><dt>${r[0]}</dt><dd>${E(r[1])}</dd></div>`).join("")}</dl>` : `<p class="note" style="margin:0">Время и место уточняются.</p>`}
