@@ -1,5 +1,6 @@
 /* ===== media library: images live in the img/ folder of the repo ===== */
 const GH = Object.assign({ repo: CFG.repo, branch: CFG.branch, dir: CFG.dir, token: "" }, (() => { try { return JSON.parse(LS.get("lvmpd-gh", "{}")); } catch (e) { return {}; } })());
+if (!LS.get("lvmpd-gh", "") && LS.get("tcs-gh", "")) { try { const o = JSON.parse(LS.get("tcs-gh", "{}")); if (o.token) LS.set("lvmpd-gh", JSON.stringify({ branch: o.branch, token: o.token })); } catch (e) {} } /* токен из старого проекта (репозиторий определяется заново) */
 const ghSave = () => LS.set("lvmpd-gh", JSON.stringify({ repo: GH.repo, branch: GH.branch, token: GH.token }));
 const ghH = () => ({ Accept: "application/vnd.github+json", ...(GH.token ? { Authorization: "Bearer " + GH.token } : {}) });
 const TRm = { а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z", и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f", х: "h", ц: "c", ч: "ch", ш: "sh", щ: "sch", ы: "y", э: "e", ю: "yu", я: "ya" };
@@ -16,9 +17,23 @@ async function imgPrep(f, max, q) {
   return { blob: b, name: `${base}-${id}.${ext}` };
 }
 const ML = { items: [], fresh: [], pick: null };
-async function ghUpload(o) {
+async function ghRepoInfo() { try { const r = await fetch(`https://api.github.com/repos/${GH.repo}`, { headers: ghH() }); return { r, j: await r.json().catch(() => ({})) }; } catch (e) { return { r: { ok: false, status: 0 }, j: { message: "нет связи с GitHub" } }; } }
+function ghWhy(r, j) {
+  if (r.status === 0) return "нет связи с api.github.com (проверьте интернет, VPN или блокировщик)";
+  if (r.status === 401) return "токен недействителен или истёк: создайте новый";
+  if (r.status === 403) return "GitHub отказал в доступе: " + ((j && j.message) || "лимит запросов или нет прав");
+  if (r.status === 404) return `репозиторий «${GH.repo}» не найден. Проверьте имя в ⚙, а если репозиторий приватный или токен fine-grained, при создании токена выберите именно ${GH.repo.split("/")[1] || "этот репозиторий"}`;
+  return (j && j.message) || "ошибка " + r.status;
+}
+async function ghUpload(o, retry) {
   const path = GH.dir + "/" + o.name, r = await fetch(`https://api.github.com/repos/${GH.repo}/contents/${path}`, { method: "PUT", headers: ghH(), body: JSON.stringify({ message: "Add " + path, content: await b64Of(o.blob), branch: GH.branch }) });
-  if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(r.status === 401 ? "токен недействителен" : r.status === 404 ? "репозиторий или ветка не найдены, либо у токена нет прав на запись" : (j.message || r.status)); }
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({})), info = await ghRepoInfo();
+    if (!retry && info.r.ok && info.j.default_branch && info.j.default_branch !== GH.branch && (r.status === 404 || r.status === 422)) { GH.branch = info.j.default_branch; ghSave(); return ghUpload(o, 1); } /* ветка называется иначе (master/main) */
+    if (!info.r.ok) throw new Error(ghWhy(info.r, info.j));
+    if (info.j.permissions && !info.j.permissions.push) throw new Error("токен видит репозиторий, но не может писать: нужно право Contents → Read and write");
+    throw new Error(r.status === 401 ? "токен недействителен или истёк" : r.status === 404 ? "у токена нет права записи в " + GH.repo + " (Contents → Read and write)" : (j.message || r.status));
+  }
   const j = await r.json(); ML.fresh.unshift({ name: o.name, url: j.content.download_url }); return path;
 }
 let embedWarned = 0;
@@ -33,12 +48,13 @@ function mlShell() {
   return ovOpen("mlov", `<div class="md wide"><div class="mh"><h3>Медиатека <small class="note" id="ml-sub"></small></h3><label class="btn ghost" style="padding:6px 12px;font-size:12px">+ Загрузить<input type="file" id="ml-f" accept="image/*" multiple hidden></label><button data-ml="cfg" title="Подключение к GitHub">⚙</button><button data-ml="x" aria-label="Закрыть">✕</button></div><div class="mb" id="mlb"></div><div class="mf"><span class="note" id="mlf"></span></div></div>`);
 }
 function mlOpen(pick) {
-  ML.pick = pick || null; const o = mlShell(); $("#ml-sub").textContent = pick ? "— выберите картинку" : GH.repo + "/" + GH.dir; $("#mlf").textContent = GH.token ? "токен подключён" : "токен не задан";
+  ML.pick = pick || null; const o = mlShell(); $("#ml-sub").textContent = pick ? "— выберите картинку" : GH.repo + "/" + GH.dir; $("#mlf").textContent = (GH.token ? "токен подключён" : "токен не задан") + " · " + GH.repo + " · ветка " + GH.branch;
   o.onclick = (e) => {
     if (e.target === o) { ovClose("mlov"); return; }
     const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
     if (d.ml === "x") ovClose("mlov"); else if (d.ml === "cfg") mlCfg(); else if (d.ml === "back") mlLoad();
     else if (d.mp) { if (ML.pick) { const f = ML.pick; ovClose("mlov"); f(d.mp); } else { try { navigator.clipboard.writeText(d.mp); } catch (x) {} toast("Путь скопирован: " + d.mp); } }
+    else if ("mchk" in d) { GH.repo = $("#mc-r").value.trim() || GH.repo; GH.branch = $("#mc-b").value.trim() || "main"; GH.token = $("#mc-t").value.trim(); ghSave(); const out = $("#mc-res"); out.textContent = "Проверяю…"; ghRepoInfo().then(({ r, j }) => { if (!r.ok) { out.innerHTML = "✗ " + esc(ghWhy(r, j)); return; } const w = j.permissions && j.permissions.push; out.innerHTML = !GH.token ? "✓ Репозиторий найден, но токен не задан: загрузка файлов недоступна." : w ? `✓ Всё в порядке: ${esc(GH.repo)}, права на запись есть${j.default_branch !== GH.branch ? `. Внимание: основная ветка называется «${esc(j.default_branch)}», а указана «${esc(GH.branch)}»` : ""}.` : "✗ Репозиторий виден, но у токена нет права записи: нужно Contents → Read and write"; }); }
     else if ("mcfg" in d) { if (d.mcfg === "clear") GH.token = ""; else { GH.repo = $("#mc-r").value.trim() || GH.repo; GH.branch = $("#mc-b").value.trim() || "main"; GH.token = $("#mc-t").value.trim(); } ghSave(); toast(GH.token ? "Сохранено" : "Токен удалён"); mlOpen(ML.pick); }
   };
   $("#ml-f").onchange = async (e) => { const fs = [...e.target.files]; if (!GH.token) { toast("Для загрузки нужен токен GitHub — откройте ⚙"); mlCfg(); return; } for (const f of fs) { try { const p = await imgPrep(f, 1600, 0.85); toast("Загружаю " + p.name + "…"); await ghUpload(p); mlGrid(); } catch (x) { toast("Не удалось загрузить: " + x.message); break; } } toast("Загрузка завершена"); };
@@ -47,8 +63,10 @@ function mlOpen(pick) {
 async function mlLoad() {
   const B = $("#mlb"); B.innerHTML = '<p class="note">Загружаю список…</p>';
   try {
-    const r = await fetch(`https://api.github.com/repos/${GH.repo}/contents/${GH.dir}?ref=${GH.branch}`, { headers: ghH() });
-    if (r.status === 404) ML.items = []; else if (!r.ok) throw new Error(r.status === 403 ? "лимит запросов GitHub — подождите или добавьте токен (⚙)" : "ошибка " + r.status);
+    const list = () => fetch(`https://api.github.com/repos/${GH.repo}/contents/${GH.dir}?ref=${GH.branch}`, { headers: ghH() });
+    let r = await list();
+    if (r.status === 404) { const info = await ghRepoInfo(); if (!info.r.ok) throw new Error(ghWhy(info.r, info.j)); if (info.j.default_branch && info.j.default_branch !== GH.branch) { GH.branch = info.j.default_branch; ghSave(); r = await list(); } }
+    if (r.status === 404) ML.items = []; else if (!r.ok) throw new Error(r.status === 403 ? "лимит запросов GitHub — подождите или добавьте токен (⚙)" : ghWhy(r, await r.json().catch(() => ({}))));
     else ML.items = (await r.json()).filter((x) => x.type === "file" && /\.(png|jpe?g|webp|gif|svg|avif)$/i.test(x.name)).map((x) => ({ name: x.name, url: x.download_url }));
     mlGrid();
   } catch (e) { B.innerHTML = `<p class="note">Не удалось получить список: ${esc(e.message)}</p>`; }
@@ -58,5 +76,5 @@ function mlGrid() {
   $("#mlb").innerHTML = L.length ? `<div class="mg">${L.map((x) => `<button data-mp="${GH.dir}/${esc(x.name)}" title="${esc(x.name)}"><img loading="lazy" src="${esc(x.url)}" alt=""><span>${esc(x.name)}</span></button>`).join("")}</div>` : `<p class="note">В папке ${GH.dir}/ пока пусто. Нажмите «+ Загрузить»${GH.token ? "" : " (нужен токен: ⚙)"}.</p>`;
 }
 function mlCfg() {
-  $("#mlb").innerHTML = `<div style="max-width:520px;margin:0 auto"><div class="fld"><label>Репозиторий</label><input id="mc-r" value="${esc(GH.repo)}"></div><div class="fld"><label>Ветка</label><input id="mc-b" value="${esc(GH.branch)}"></div><div class="fld"><label>Токен (Contents: Read and write)</label><input id="mc-t" type="password" placeholder="github_pat_…" value="${esc(GH.token)}"></div><p><button class="pri" data-mcfg>Сохранить</button> <button data-mcfg="clear">Забыть токен</button> <button data-ml="back">Назад</button></p><ol class="note" style="line-height:1.8;padding-left:18px"><li>GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token.</li><li>Repository access: Only select repositories → lvmpd.</li><li>Permissions → Repository permissions → <b>Contents: Read and write</b>.</li><li>Скопируйте токен и вставьте выше. Он хранится только в этом браузере и нужен для загрузки картинок и публикации.</li></ol></div>`;
+  $("#mlb").innerHTML = `<div style="max-width:520px;margin:0 auto"><div class="fld"><label>Репозиторий</label><input id="mc-r" value="${esc(GH.repo)}"></div><div class="fld"><label>Ветка</label><input id="mc-b" value="${esc(GH.branch)}"></div><div class="fld"><label>Токен (Contents: Read and write)</label><input id="mc-t" type="password" placeholder="github_pat_…" value="${esc(GH.token)}"></div><p><button class="pri" data-mcfg>Сохранить</button> <button data-mchk>Проверить подключение</button> <button data-mcfg="clear">Забыть токен</button> <button data-ml="back">Назад</button></p><div id="mc-res" class="note" style="margin:0 0 14px"></div><ol class="note" style="line-height:1.8;padding-left:18px"><li>GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token.</li><li>Repository access: Only select repositories → <b>${esc(GH.repo.split("/")[1] || "ваш репозиторий")}</b> (токен от другого проекта не подойдёт).</li><li>Permissions → Repository permissions → <b>Contents: Read and write</b>.</li><li>Скопируйте токен и вставьте выше. Он хранится только в этом браузере и нужен для загрузки картинок и публикации.</li></ol></div>`;
 }
