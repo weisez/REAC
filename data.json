@@ -75,7 +75,7 @@
       "en": "HEATHER STRANGELOVE",
       "rank": "Шериф",
       "title": "Руководитель департамента",
-      "unit": "u-9gj3job",
+      "unit": "psacb",
       "photo": "",
       "bio": "Заглушка: краткая биография шерифа. Заменяется в режиме правки.",
       "status": "active"
@@ -86,7 +86,7 @@
       "en": "Kaiden Hayes",
       "rank": "Андершериф",
       "title": "Координатор операций",
-      "unit": "u-9gj3job",
+      "unit": "psacb",
       "photo": "",
       "bio": "Курирует взаимодействие Бюро полевых операций и Офиса специальных операций. В первую очередь замещает шерифа.",
       "status": "active"
@@ -97,175 +97,10 @@
       "en": "Takayuki Nagashima",
       "rank": "Андершериф",
       "title": "Административный координатор",
-      "unit": "u-9gj3job",
+      "unit": "psacb",
       "photo": "",
       "bio": "Курирует Программу полевой подготовки и Бюро профессиональных стандартов. Во вторую очередь замещает шерифа.",
       "status": "active"
-    },
-    {
-      "id": "v-fob-sup",
-      "name": "VACANT",
-      "en": "",
-      "rank": "Sheriff Sergeant",
-      "title": "Супервайзер патрульных операций",
-      "unit": "fob",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-swat-lead",
-      "name": "VACANT",
-      "en": "",
-      "rank": "Sheriff Sergeant",
-      "title": "Командир 6-го полевого бранча (SWAT)",
-      "unit": "soo",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-swat-sr",
-      "name": "VACANT",
-      "en": "",
-      "rank": "Deputy Specialist",
-      "title": "Старший оператор — заместитель командира бранча",
-      "unit": "soo",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-swat-o1",
-      "name": "VACANT",
-      "en": "",
-      "rank": "",
-      "title": "Оператор SWAT",
-      "unit": "soo",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-swat-o2",
-      "name": "VACANT",
-      "en": "",
-      "rank": "",
-      "title": "Оператор SWAT",
-      "unit": "soo",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-det-lead",
-      "name": "VACANT",
-      "en": "",
-      "rank": "Sheriff Sergeant",
-      "title": "Командир 27-го следственного бранча (Detective)",
-      "unit": "soo",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-det-sr",
-      "name": "VACANT",
-      "en": "",
-      "rank": "Deputy Specialist",
-      "title": "Старший детектив — заместитель командира бранча",
-      "unit": "soo",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-det-1",
-      "name": "VACANT",
-      "en": "",
-      "rank": "",
-      "title": "Детектив",
-      "unit": "soo",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-fto-1",
-      "name": "VACANT",
-      "en": "",
-      "rank": "Deputy Specialist",
-      "title": "Лектор FTO (Field Training Officer)",
-      "unit": "fto",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-fto-2",
-      "name": "VACANT",
-      "en": "",
-      "rank": "Deputy Specialist",
-      "title": "Лектор FTO (Field Training Officer)",
-      "unit": "fto",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-cts-1",
-      "name": "VACANT",
-      "en": "",
-      "rank": "",
-      "title": "Старший лектор CTS (Senior CTS Officer)",
-      "unit": "fto",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-cts-2",
-      "name": "VACANT",
-      "en": "",
-      "rank": "",
-      "title": "Старший лектор CTS (Senior CTS Officer)",
-      "unit": "fto",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-ps-press",
-      "name": "VACANT",
-      "en": "",
-      "rank": "",
-      "title": "Офицер пресс-центра",
-      "unit": "psacb",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-ps-pr",
-      "name": "VACANT",
-      "en": "",
-      "rank": "",
-      "title": "Офицер по связям с общественностью и внешними службами",
-      "unit": "psacb",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
-    },
-    {
-      "id": "v-ps-web",
-      "name": "VACANT",
-      "en": "",
-      "rank": "",
-      "title": "Администратор электронных кабинетов и сайта",
-      "unit": "psacb",
-      "photo": "",
-      "bio": "",
-      "status": "vacant"
     },
     {
       "id": "p-f9l62mk",
@@ -297,17 +132,6 @@
       "title": "",
       "unit": "u-9gj3job",
       "status": "vacant",
-      "photo": "",
-      "bio": ""
-    },
-    {
-      "id": "p-71gta64",
-      "name": "VACANT",
-      "en": "",
-      "rank": "Ассистент шерифа",
-      "title": "",
-      "unit": "fob",
-      "status": "active",
       "photo": "",
       "bio": ""
     }
@@ -455,21 +279,6 @@
         "y": 23.6,
         "z": 1.16
       }
-    },
-    {
-      "id": "u-9gj3job",
-      "name": "Руководство департамента",
-      "en": "",
-      "tag": "",
-      "banner": "img/vecherniy-ogni-las-vegasa-upscaled-2x-cbud.webp",
-      "quote": "",
-      "quoteBy": "",
-      "summary": "",
-      "roster": [],
-      "criteria": [],
-      "form": "",
-      "docs": [],
-      "gallery": []
     }
   ],
   "ranks": [
