@@ -134,6 +134,94 @@
       "status": "vacant",
       "photo": "",
       "bio": ""
+    },
+    {
+      "id": "p-4s1b4nb",
+      "name": "VACANT",
+      "en": "Name Surname",
+      "rank": "Капитан",
+      "title": "Руководитель бюро",
+      "unit": "fob",
+      "status": "vacant",
+      "photo": "",
+      "bio": ""
+    },
+    {
+      "id": "p-r1js2pj",
+      "name": "VACANT",
+      "en": "Name Surname",
+      "rank": "Сержант",
+      "title": "Супервайзер",
+      "unit": "fob",
+      "status": "vacant",
+      "photo": "",
+      "bio": ""
+    },
+    {
+      "id": "p-tqkqkjl",
+      "name": "VACANT",
+      "en": "Name Surname",
+      "rank": "Лейтенант",
+      "title": "Координатор бранча",
+      "unit": "soo",
+      "status": "vacant",
+      "photo": "",
+      "bio": ""
+    },
+    {
+      "id": "p-4ghy4ii",
+      "name": "VACANT",
+      "en": "Name Surname",
+      "rank": "Специалист",
+      "title": "Специальный оператор",
+      "unit": "soo",
+      "status": "vacant",
+      "photo": "",
+      "bio": ""
+    },
+    {
+      "id": "p-nfq3qvs",
+      "name": "VACANT",
+      "en": "Name Surname",
+      "rank": "Помощник шерифа II",
+      "title": "Оператор",
+      "unit": "soo",
+      "status": "vacant",
+      "photo": "",
+      "bio": ""
+    },
+    {
+      "id": "p-419dwu1",
+      "name": "VACANT",
+      "en": "Name Surname",
+      "rank": "Лейтенант",
+      "title": "Координатор бранча",
+      "unit": "fto",
+      "status": "vacant",
+      "photo": "",
+      "bio": ""
+    },
+    {
+      "id": "p-pk8mpwt",
+      "name": "VACANT",
+      "en": "Name Surname",
+      "rank": "Сержант",
+      "title": "Специальный оператор",
+      "unit": "fto",
+      "status": "vacant",
+      "photo": "",
+      "bio": ""
+    },
+    {
+      "id": "p-8qhnmn1",
+      "name": "VACANT",
+      "en": "Name Surname",
+      "rank": "Помощник шерифа II",
+      "title": "Оператор",
+      "unit": "fto",
+      "status": "vacant",
+      "photo": "",
+      "bio": ""
     }
   ],
   "units": [
@@ -147,11 +235,11 @@
       "roster": [
         {
           "role": "Руководитель",
-          "pid": "sheriff"
+          "pid": "p-4s1b4nb"
         },
         {
           "role": "Супервайзер",
-          "pid": "sheriff"
+          "pid": "p-r1js2pj"
         }
       ],
       "criteria": [],
@@ -176,23 +264,23 @@
       "roster": [
         {
           "role": "Координатор бранча",
-          "pid": "sheriff"
+          "pid": "p-tqkqkjl"
         },
         {
           "role": "6-й полевой бранч: специальный оператор",
-          "pid": "sheriff"
+          "pid": "p-4ghy4ii"
         },
         {
           "role": "6-й полевой бранч: оператор",
-          "pid": "sheriff"
+          "pid": "p-nfq3qvs"
         },
         {
           "role": "6-й полевой бранч: оператор",
-          "pid": "sheriff"
+          "pid": "p-nfq3qvs"
         },
         {
           "role": "6-й полевой бранч: оператор",
-          "pid": "sheriff"
+          "pid": "p-nfq3qvs"
         }
       ],
       "criteria": [
@@ -228,23 +316,23 @@
       "roster": [
         {
           "role": "Координатор бранча",
-          "pid": "sheriff"
+          "pid": "p-419dwu1"
         },
         {
           "role": "27-ой следственный бранч: специальный оператор",
-          "pid": "sheriff"
+          "pid": "p-pk8mpwt"
         },
         {
           "role": "27-ой следственный бранч: оператор",
-          "pid": "sheriff"
+          "pid": "p-8qhnmn1"
         },
         {
           "role": "27-ой следственный бранч: оператор",
-          "pid": "sheriff"
+          "pid": "p-8qhnmn1"
         },
         {
           "role": "27-ой следственный бранч: оператор",
-          "pid": "sheriff"
+          "pid": "p-8qhnmn1"
         }
       ],
       "criteria": [
