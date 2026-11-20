@@ -3,6 +3,9 @@ const CFG = {
   ownerHash: "f7a0c52119c58eec59cf870d287777882986efd0f9ba61182d700e29206c224c",
   repo: (() => { const m = location.hostname.match(/^([^.]+)\.github\.io$/), p = location.pathname.split("/")[1]; return m && p ? m[1] + "/" + p : "weisez/REAC"; })(),
   branch: "main", dir: "img",
+
+  /* адрес воркера REAC inbox (см. worker/README.md), например "https://reac-inbox.ВАШ-АККАУНТ.workers.dev". Пусто — кнопки отправки в Discord скрыты */
+  inbox: "https://reac-inbox.weisez.workers.dev",
 };
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

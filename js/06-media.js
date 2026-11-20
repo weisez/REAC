@@ -60,14 +60,24 @@ function mlOpen(pick) {
   $("#ml-f").onchange = async (e) => { const fs = [...e.target.files]; if (!GH.token) { toast("Для загрузки нужен токен GitHub — откройте ⚙"); mlCfg(); return; } for (const f of fs) { try { const p = await imgPrep(f, 1600, 0.85); toast("Загружаю " + p.name + "…"); await ghUpload(p); mlGrid(); } catch (x) { toast("Не удалось загрузить: " + x.message); break; } } toast("Загрузка завершена"); };
   mlLoad();
 }
+/* Список картинок берём из img/manifest.json (лежит рядом с сайтом, api.github.com не нужен).
+   API GitHub остаётся запасным путём — например, если манифест ещё не успел обновиться. */
+async function mlManifest() {
+  const r = await fetch(`${GH.dir}/manifest.json?t=${Math.floor(Date.now() / 30000)}`, { cache: "no-cache" });
+  if (!r.ok) throw new Error("manifest " + r.status);
+  const j = await r.json(), a = Array.isArray(j) ? j : j.files;
+  if (!Array.isArray(a)) throw new Error("manifest: неверный формат");
+  return a.filter((n) => typeof n === "string").map((n) => ({ name: n, url: `${GH.dir}/${n}` })); /* путь относительный: тот же адрес, что и у остальных картинок сайта */
+}
 async function mlLoad() {
   const B = $("#mlb"); B.innerHTML = '<p class="note">Загружаю список…</p>';
+  try { ML.items = await mlManifest(); mlGrid(); return; } catch (e) { /* нет манифеста — пробуем API */ }
   try {
     const list = () => fetch(`https://api.github.com/repos/${GH.repo}/contents/${GH.dir}?ref=${GH.branch}`, { headers: ghH() });
     let r = await list();
     if (r.status === 404) { const info = await ghRepoInfo(); if (!info.r.ok) throw new Error(ghWhy(info.r, info.j)); if (info.j.default_branch && info.j.default_branch !== GH.branch) { GH.branch = info.j.default_branch; ghSave(); r = await list(); } }
     if (r.status === 404) ML.items = []; else if (!r.ok) throw new Error(r.status === 403 ? "лимит запросов GitHub — подождите или добавьте токен (⚙)" : ghWhy(r, await r.json().catch(() => ({}))));
-    else ML.items = (await r.json()).filter((x) => x.type === "file" && /\.(png|jpe?g|webp|gif|svg|avif)$/i.test(x.name)).map((x) => ({ name: x.name, url: x.download_url }));
+    else ML.items = (await r.json()).filter((x) => x.type === "file" && /\.(png|jpe?g|webp|gif|svg|avif)$/i.test(x.name)).map((x) => ({ name: x.name, url: `${GH.dir}/${x.name}` }));
     mlGrid();
   } catch (e) { B.innerHTML = `<p class="note">Не удалось получить список: ${esc(e.message)}</p>`; }
 }

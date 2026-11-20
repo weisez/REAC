@@ -111,12 +111,24 @@ function staffOrder() {
   S.units.forEach((u) => { if (!ids.includes(u.id)) ids.push(u.id); });
   return ids.map(uById);
 }
+/* Схема управления: шериф → андершерифы → подразделения. Связи можно переопределить в данных: meta.org = { root: "id", kids: [{ pid: "id", units: ["fob", ...] }] } */
+const ORG_DEF = { root: "sheriff", kids: [{ pid: "uso", units: ["fob", "soo"] }, { pid: "usa", units: ["fto", "psacb"] }] };
+function orgUnit(id) {
+  const u = uById(id); if (!u) return "";
+  const r = u.roster || [], lead = r.map((x) => ({ role: x.role, p: pById(x.pid) })).find((x) => x.p);
+  const vac = r.filter((x) => (pById(x.pid) || {}).status === "vacant").length, hd = lead && lead.p.status !== "vacant" ? lead : null;
+  return `<li><a class="ounit reveal" href="#/unit/${E(u.id)}"><span class="ou-en">${E(u.en || "")}</span><b>${E(u.name)}</b>${hd ? `<span class="ou-hd"><i>${E(hd.role)}</i>${E(hd.p.name)}</span>` : lead ? `<span class="ou-hd vac"><i>${E(lead.role)}</i>вакантно</span>` : ""}<span class="ou-n"><span class="chip ok">${r.length - vac} в штате</span>${vac ? ` <span class="chip warn">${vac} вакант.</span>` : ""}</span></a></li>`;
+}
+function orgChart() {
+  const O = S.meta.org && S.meta.org.root ? S.meta.org : ORG_DEF, P = (id) => (pById(id) ? `<div class="ocard reveal">${prow(pById(id))}</div>` : "");
+  const kids = (O.kids || []).filter((k) => pById(k.pid)), units = (k) => (k.units || []).filter(uById);
+  return `<div class="ox" aria-label="Схема управления"><ul><li class="top">${P(O.root)}<ul>${kids.map((k) => `<li>${P(k.pid)}${units(k).length ? `<ul>${units(k).map(orgUnit).join("")}</ul>` : ""}</li>`).join("")}</ul></li></ul></div>`;
+}
 route("staff", () => {
-  const C = (id) => pById(id) ? `<div class="reveal">${prow(pById(id))}</div>` : "";
   const order = staffOrder();
   return { title: "Состав", html: `${phead("Руководство и состав", "Личный состав Area Command", "Командование, руководители подразделений и рядовой состав. Вакантные должности открыты для отбора.", S.meta.hero, null, cropOf(S.meta, "hero"))}
   <section class="sec"><div class="wrap">${sech("Командование", "Схема управления")}
-    <div class="org"><div class="orgrow">${C("sheriff")}</div><div class="orgrow">${C("uso")}${C("usa")}</div><div class="orgrow">${["v-fob", "v-soo", "v-fto", "v-psacb"].map(C).join("")}</div></div></div></section>
+    ${orgChart()}</div></section>
   <section class="sec alt"><div class="wrap">${sech("По подразделениям", "Состав")}
     ${order.map((u, i) => { const L = S.people.filter((p) => p.unit === u.id); return `<div class="ugrp"><div class="ugh"><h3>${E(u.name)}</h3><span class="ed ugm"><button data-mvs="${u.id}:-1" ${i ? "" : "disabled"} title="Выше">↑</button><button data-mvs="${u.id}:1" ${i < order.length - 1 ? "" : "disabled"} title="Ниже">↓</button></span></div>${L.length ? `<div class="grid g3">${L.map((p) => `<div class="reveal">${prow(p)}</div>`).join("")}</div>` : `<p class="note">Состав не указан.</p>`}</div>`; }).join("")}
     ${addb("people", "Сотрудник / вакансия")}</div></section>` };
