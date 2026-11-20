@@ -1,6 +1,10 @@
 /* ===== media library: images live in the img/ folder of the repo ===== */
 const GH = Object.assign({ repo: CFG.repo, branch: CFG.branch, dir: CFG.dir, token: "" }, (() => { try { return JSON.parse(LS.get("lvmpd-gh", "{}")); } catch (e) { return {}; } })());
 if (!LS.get("lvmpd-gh", "") && LS.get("tcs-gh", "")) { try { const o = JSON.parse(LS.get("tcs-gh", "{}")); if (o.token) LS.set("lvmpd-gh", JSON.stringify({ branch: o.branch, token: o.token })); } catch (e) {} } /* токен из старого проекта (репозиторий определяется заново) */
+/* GitHub через воркер: если у вас без VPN не открывается api.github.com / raw.githubusercontent.com, запросы идут через CFG.inbox */
+const GHAPI = () => (CFG.inbox ? CFG.inbox.replace(/\/$/, "") + "/gh" : "https://api.github.com");
+const GHWORK = (file) => (CFG.inbox ? `${CFG.inbox.replace(/\/$/, "")}/raw/${file}?t=${Math.floor(Date.now() / 15000)}` : "");
+async function ghWorkRead(file) { if (!CFG.inbox) throw new Error("воркер не настроен"); const r = await fetch(GHWORK(file)); if (!r.ok) throw new Error("worker " + r.status); return r.text(); }
 const ghSave = () => LS.set("lvmpd-gh", JSON.stringify({ repo: GH.repo, branch: GH.branch, token: GH.token }));
 const ghH = () => ({ Accept: "application/vnd.github+json", ...(GH.token ? { Authorization: "Bearer " + GH.token } : {}) });
 const TRm = { а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z", и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f", х: "h", ц: "c", ч: "ch", ш: "sh", щ: "sch", ы: "y", э: "e", ю: "yu", я: "ya" };
@@ -17,7 +21,7 @@ async function imgPrep(f, max, q) {
   return { blob: b, name: `${base}-${id}.${ext}` };
 }
 const ML = { items: [], fresh: [], pick: null };
-async function ghRepoInfo() { try { const r = await fetch(`https://api.github.com/repos/${GH.repo}`, { headers: ghH() }); return { r, j: await r.json().catch(() => ({})) }; } catch (e) { return { r: { ok: false, status: 0 }, j: { message: "нет связи с GitHub" } }; } }
+async function ghRepoInfo() { try { const r = await fetch(`${GHAPI()}/repos/${GH.repo}`, { headers: ghH() }); return { r, j: await r.json().catch(() => ({})) }; } catch (e) { return { r: { ok: false, status: 0 }, j: { message: "нет связи с GitHub" } }; } }
 function ghWhy(r, j) {
   if (r.status === 0) return "нет связи с api.github.com (проверьте интернет, VPN или блокировщик)";
   if (r.status === 401) return "токен недействителен или истёк: создайте новый";
@@ -26,7 +30,7 @@ function ghWhy(r, j) {
   return (j && j.message) || "ошибка " + r.status;
 }
 async function ghUpload(o, retry) {
-  const path = GH.dir + "/" + o.name, r = await fetch(`https://api.github.com/repos/${GH.repo}/contents/${path}`, { method: "PUT", headers: ghH(), body: JSON.stringify({ message: "Add " + path, content: await b64Of(o.blob), branch: GH.branch }) });
+  const path = GH.dir + "/" + o.name, r = await fetch(`${GHAPI()}/repos/${GH.repo}/contents/${path}`, { method: "PUT", headers: ghH(), body: JSON.stringify({ message: "Add " + path, content: await b64Of(o.blob), branch: GH.branch }) });
   if (!r.ok) {
     const j = await r.json().catch(() => ({})), info = await ghRepoInfo();
     if (!retry && info.r.ok && info.j.default_branch && info.j.default_branch !== GH.branch && (r.status === 404 || r.status === 422)) { GH.branch = info.j.default_branch; ghSave(); return ghUpload(o, 1); } /* ветка называется иначе (master/main) */
@@ -73,7 +77,7 @@ async function mlLoad() {
   const B = $("#mlb"); B.innerHTML = '<p class="note">Загружаю список…</p>';
   try { ML.items = await mlManifest(); mlGrid(); return; } catch (e) { /* нет манифеста — пробуем API */ }
   try {
-    const list = () => fetch(`https://api.github.com/repos/${GH.repo}/contents/${GH.dir}?ref=${GH.branch}`, { headers: ghH() });
+    const list = () => fetch(`${GHAPI()}/repos/${GH.repo}/contents/${GH.dir}?ref=${GH.branch}`, { headers: ghH() });
     let r = await list();
     if (r.status === 404) { const info = await ghRepoInfo(); if (!info.r.ok) throw new Error(ghWhy(info.r, info.j)); if (info.j.default_branch && info.j.default_branch !== GH.branch) { GH.branch = info.j.default_branch; ghSave(); r = await list(); } }
     if (r.status === 404) ML.items = []; else if (!r.ok) throw new Error(r.status === 403 ? "лимит запросов GitHub — подождите или добавьте токен (⚙)" : ghWhy(r, await r.json().catch(() => ({}))));

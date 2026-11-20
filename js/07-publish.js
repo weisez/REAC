@@ -3,7 +3,7 @@ const PUB = { sha: "", hash: "", remote: null, txt: "", busy: 0, t: 0 };
 const pbH = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + "." + s.length; };
 const pbN = (o) => JSON.stringify(o);
 const pbErr = (r, j) => new Error(r.status === 401 ? "токен недействителен или истёк" : r.status === 403 ? "нет прав у токена или лимит запросов GitHub" : r.status === 404 ? "data.json или репозиторий не найдены (проверьте ветку и права токена)" : r.status === 409 || r.status === 422 ? "данные на GitHub изменились — откройте окно заново" : (j && j.message) || "ошибка " + r.status);
-const pbUrl = (ref) => `https://api.github.com/repos/${GH.repo}/contents/data.json?ref=${ref || GH.branch}`;
+const pbUrl = (ref) => `${GHAPI()}/repos/${GH.repo}/contents/data.json?ref=${ref || GH.branch}`;
 async function pbMeta(ref) { const r = await fetch(pbUrl(ref), { headers: ghH() }), j = await r.json().catch(() => ({})); if (!r.ok) throw pbErr(r, j); return j; }
 async function pbRaw(ref) { const r = await fetch(pbUrl(ref), { headers: { ...ghH(), Accept: "application/vnd.github.raw+json" } }); if (!r.ok) throw pbErr(r); return r.text(); }
 async function pbSync() { const m = await pbMeta(), t = await pbRaw(); PUB.sha = m.sha; PUB.txt = t; PUB.remote = JSON.parse(t); delete PUB.remote.events; PUB.hash = pbH(pbN(PUB.remote)); pbInd(); }
@@ -41,7 +41,7 @@ async function pbGo() {
   if (PUB.busy) return; PUB.busy = 1; const btn = $('[data-pb="go"]'); btn.disabled = true; btn.textContent = "Публикую…";
   try {
     const m = /^\{\r?\n(\t| +)"/.exec(PUB.txt), ind = m ? m[1] : 2, text = JSON.stringify(S, null, ind) + "\n";
-    const r = await fetch(`https://api.github.com/repos/${GH.repo}/contents/data.json`, { method: "PUT", headers: ghH(), body: JSON.stringify({ message: ($("#pb-m").value || "").trim() || "Update data.json", content: await b64Of(new Blob([text], { type: "application/json" })), sha: PUB.sha, branch: GH.branch }) });
+    const r = await fetch(`${GHAPI()}/repos/${GH.repo}/contents/data.json`, { method: "PUT", headers: ghH(), body: JSON.stringify({ message: ($("#pb-m").value || "").trim() || "Update data.json", content: await b64Of(new Blob([text], { type: "application/json" })), sha: PUB.sha, branch: GH.branch }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw pbErr(r, j);
     PUB.sha = j.content.sha; PUB.txt = text; PUB.remote = JSON.parse(text); PUB.hash = pbH(pbN(PUB.remote)); pbInd();
     $("#pbb").innerHTML = `<p><b>Опубликовано ✓</b></p><p class="note">GitHub Pages обновит сайт примерно через минуту.${j.commit && j.commit.html_url ? ` <a href="${esc(j.commit.html_url)}" target="_blank" rel="noopener">Посмотреть коммит</a>` : ""}</p>`;
@@ -50,7 +50,7 @@ async function pbGo() {
 async function pbHist() {
   const B = $("#pbb"); B.innerHTML = '<p class="note">Загружаю историю…</p>';
   try {
-    const r = await fetch(`https://api.github.com/repos/${GH.repo}/commits?path=data.json&sha=${GH.branch}&per_page=10`, { headers: ghH() }); if (!r.ok) throw pbErr(r);
+    const r = await fetch(`${GHAPI()}/repos/${GH.repo}/commits?path=data.json&sha=${GH.branch}&per_page=10`, { headers: ghH() }); if (!r.ok) throw pbErr(r);
     const L = await r.json();
     B.innerHTML = `<p class="note">Версию можно загрузить в редактор. На сайте она появится, только если вы потом нажмёте «Опубликовать».</p>${L.map((c) => `<div class="pb-r"><b>${esc(new Date(c.commit.author.date).toLocaleString("ru-RU", { dateStyle: "medium", timeStyle: "short" }))}</b><small>${esc((c.commit.message || "").split("\n")[0])}</small><button data-pb="rev" data-sha="${c.sha}" style="margin-left:auto">Загрузить</button></div>`).join("")}<p><button data-pb="back">← Назад</button></p>`;
   } catch (e) { B.innerHTML = `<p class="note">Не удалось получить историю: ${esc(e.message)}</p>`; }

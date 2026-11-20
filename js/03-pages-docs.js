@@ -127,8 +127,8 @@ route("board", () => ({ title: "Объявления", init: boardInit, html: `$
   <section class="sec"><div class="wrap two"><div class="bcol">
     <div class="post compose" id="cmp"><div class="av">✎</div><div class="cbody"><button class="cmp-t" id="cmpt" aria-expanded="false">Написать объявление…</button>
       <div class="cmp-b"><div><div class="cf"><div class="fld"><label>Автор (звание, имя)</label><input id="bw" placeholder="Офицер Имя Фамилия"></div><div class="fld"><label>Где / подпись</label><input id="ba" placeholder="Доска объявлений Area Command"></div></div>
-        <div class="fld ownonly"><label>Заголовок (необязательно)</label><input id="bh" placeholder="Например: Брифинг в 17:30"></div>
-        <div class="fld"><label>Текст</label><textarea id="bt"></textarea></div><div class="out small" id="bo"></div><p class="cact">${dcOn() ? `${dcTrap}<button class="pri" id="bsend">Отправить на проверку</button>` : ""}<button class="pri ownonly" id="bpub">Опубликовать на сайте</button><button id="bc">Скопировать</button><button id="bx">Свернуть</button></p></div></div></div></div>
+        <div class="fld"><label>Заголовок (необязательно)</label><input id="bh" placeholder="Например: Брифинг в 17:30"></div>
+        <div class="fld"><label>Текст</label><textarea id="bt"></textarea></div><div class="out small" id="bo"></div><p class="cact">${dcOn() ? `${dcTrap}<button class="pri" id="bsend">Отправить на проверку</button>` : ""}<button class="ownonly" id="bpub" title="Только для владельца: опубликовать сразу, без проверки">Опубликовать сразу</button><button id="bc">Скопировать</button><button id="bx">Свернуть</button></p></div></div></div></div>
     <div id="bl">${boardList()}</div></div>
     <div class="aside"><details class="box rl" id="rl" open><summary>Правила площадки</summary><ol class="rules">${(S.meta.lifeRules || []).map((r) => `<li>${E(r.replace(/^\d+\.\s*/, ""))}</li>`).join("")}</ol></details></div></div></section>` }), "board");
 function boardInit(app) {

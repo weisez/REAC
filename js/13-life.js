@@ -7,7 +7,7 @@
    Новые истории встают в начало списка: на главной показываются первые четыре. */
 function liveStore(c) {
   const T = { list: [], q: Promise.resolve(), busy: 0, status: "load", at: 0, err: "", last: 0, timer: 0 };
-  const api = () => `https://api.github.com/repos/${GH.repo}/contents/${c.file}`;
+  const api = () => `${GHAPI()}/repos/${GH.repo}/contents/${c.file}`;
   const parse = (txt) => {
     const j = JSON.parse(txt), a = Array.isArray(j) ? j : j && j[c.prop];
     if (!Array.isArray(a)) throw new Error(c.file + ": ожидался список");
@@ -23,10 +23,11 @@ function liveStore(c) {
       async () => { const r = await fetch(api() + "?ref=" + GH.branch, { headers: { ...ghH(), Accept: "application/vnd.github.raw+json" }, cache: "no-cache" }); if (!r.ok) throw new Error("api " + r.status); return r.text(); },
       async () => { const r = await fetch(`https://raw.githubusercontent.com/${GH.repo}/${GH.branch}/${c.file}?t=${Math.floor(Date.now() / 60000)}`); if (!r.ok) throw new Error("raw " + r.status); return r.text(); },
       async () => { const r = await fetch(c.file, { cache: "no-cache" }); if (!r.ok) throw new Error("file " + r.status); return r.text(); },
+      async () => ghWorkRead(c.file),
     ];
     let last = null;
     /* посетители (без токена) читают raw: у API GitHub лимит 60 запросов/час на IP, а за офисным или мобильным NAT он общий */
-  const order = GH.token ? [0, 1, 2] : [1, 2];
+  const order = (GH.token ? [0, 3, 1, 2] : [3, 1, 2]).filter((i) => i !== 3 || CFG.inbox); /* 3 — через воркер, 1 — raw напрямую, 2 — файл сайта */
   for (let k = 0; k < order.length; k++) {
     const i = order[k], fresh = k < order.length - 1;
       try {

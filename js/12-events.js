@@ -9,7 +9,7 @@
    Событие показывается на слайдере, пока не прошла дата «until» (если её нет — дата события; если нет и её — без ограничения). */
 const EVT = { list: [], q: Promise.resolve(), busy: 0, status: "load", at: 0, err: "", timer: 0, last: 0 };
 const EVKEY = "lvmpd-events-v1";
-const evApi = () => `https://api.github.com/repos/${GH.repo}/contents/events.json`;
+const evApi = () => `${GHAPI()}/repos/${GH.repo}/contents/events.json`;
 const evParse = (txt) => {
   const j = JSON.parse(txt), a = Array.isArray(j) ? j : j && j.events;
   if (!Array.isArray(a)) throw new Error("events.json: ожидался список событий");
@@ -25,10 +25,11 @@ async function evLoad() {
     async () => { const r = await fetch(evApi() + "?ref=" + GH.branch, { headers: { ...ghH(), Accept: "application/vnd.github.raw+json" }, cache: "no-cache" }); if (!r.ok) throw new Error("api " + r.status); return r.text(); },
     async () => { const r = await fetch(`https://raw.githubusercontent.com/${GH.repo}/${GH.branch}/events.json?t=${Math.floor(Date.now() / 60000)}`); if (!r.ok) throw new Error("raw " + r.status); return r.text(); },
     async () => { const r = await fetch("events.json", { cache: "no-cache" }); if (!r.ok) throw new Error("file " + r.status); return r.text(); },
+    async () => ghWorkRead("events.json"),
   ];
   let last = null;
   /* посетители (без токена) читают raw: у API GitHub лимит 60 запросов/час на IP, а за офисным или мобильным NAT он общий */
-  const order = GH.token ? [0, 1, 2] : [1, 2];
+  const order = (GH.token ? [0, 3, 1, 2] : [3, 1, 2]).filter((i) => i !== 3 || CFG.inbox); /* 3 — через воркер, 1 — raw напрямую, 2 — файл сайта */
   for (let k = 0; k < order.length; k++) {
     const i = order[k], fresh = k < order.length - 1;
     try {

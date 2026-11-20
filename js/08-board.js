@@ -4,7 +4,7 @@
    записки через токен: каждое действие — отдельный коммит board.json. */
 const BOARD = { notes: [], q: Promise.resolve(), busy: 0, status: "load", at: 0, err: "", timer: 0, etag: "" };
 const BKEY = "lvmpd-board-v1";
-const bApi = () => `https://api.github.com/repos/${GH.repo}/contents/board.json`;
+const bApi = () => `${GHAPI()}/repos/${GH.repo}/contents/board.json`;
 const bParse = (txt) => {
   const j = JSON.parse(txt), a = Array.isArray(j) ? j : j && j.notes;
   if (!Array.isArray(a)) throw new Error("board.json: ожидался список записок");
@@ -23,10 +23,11 @@ async function boardLoad() {
     async () => { const r = await fetch(bApi() + "?ref=" + GH.branch, { headers: { ...ghH(), Accept: "application/vnd.github.raw+json" }, cache: "no-cache" }); if (!r.ok) throw new Error("api " + r.status); return r.text(); },
     async () => { const r = await fetch(`https://raw.githubusercontent.com/${GH.repo}/${GH.branch}/board.json?t=${Math.floor(Date.now() / 60000)}`); if (!r.ok) throw new Error("raw " + r.status); return r.text(); },
     async () => { const r = await fetch("board.json", { cache: "no-cache" }); if (!r.ok) throw new Error("file " + r.status); return r.text(); },
+    async () => ghWorkRead("board.json"),
   ];
   let last = null;
   /* посетители (без токена) читают raw: у API GitHub лимит 60 запросов/час на IP, а за офисным или мобильным NAT он общий */
-  const order = GH.token ? [0, 1, 2] : [1, 2];
+  const order = (GH.token ? [0, 3, 1, 2] : [3, 1, 2]).filter((i) => i !== 3 || CFG.inbox); /* 3 — через воркер, 1 — raw напрямую, 2 — файл сайта */
   for (let k = 0; k < order.length; k++) {
     const i = order[k], fresh = k < order.length - 1;
     try { const notes = bParse(await src[i]()); if (BOARD.busy) return false; /* не затираем действие, которое ещё записывается */ const ch = JSON.stringify(notes) !== JSON.stringify(BOARD.notes); BOARD.notes = notes; BOARD.at = Date.now(); BOARD.status = fresh ? "live" : "stale"; BOARD.err = ""; bCache(); return ch; }
@@ -91,7 +92,7 @@ function boardStat() {
 const boardItem = (n) => `<div class="post reveal in"><div class="av">${E(ini(n.author))}</div><div class="pbody"><div class="who">${E(n.role ? n.role + " " : "")}${E(n.author || "")}</div><div class="where">${E(n.place || "")}${n.place && n.date ? " · " : ""}${n.date ? E(n.date) : ""}</div>${n.title ? `<h4 class="nt">${E(n.title)}</h4>` : ""}<p class="nb">${E(n.text)}</p></div>${eb("notes", n.id)}${mvb("notes", n.id)}</div>`;
 function boardList() {
   const L = BOARD.notes.map(boardItem).join("") || (BOARD.status === "load" ? "" : `<p class="note">Объявлений пока нет.</p>`);
-  return `${OWN && !VIEW() ? `<div class="bstatus" id="bst">${boardStat()}<button type="button" class="bref" id="bref">Обновить</button></div>` : ""}${L}${addb("notes", "Объявление")}`;
+  return `${OWN && !VIEW() ? `<div class="bstatus" id="bst">${boardStat()}<button type="button" class="bref" id="bref">Обновить</button></div>` : ""}${L}`;
 }
 function boardPaint() { const el = $("#bl"); if (!el) return; el.innerHTML = ui(boardList()); const b = $("#bref"); if (b) b.onclick = boardRefresh; }
 async function boardRefresh() { BOARD.status = BOARD.busy ? "save" : BOARD.notes.length ? BOARD.status : "load"; try { await boardLoad(); } catch (e) {} boardPaint(); }
