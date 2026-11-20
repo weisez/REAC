@@ -1,44 +1,20 @@
 <div align="center">
 
-# ROCA ESCALANTE · AREA COMMAND
+# LAS VENTURAS METROPOLITAN POLICE DEPARTMENT
 
-*Las Venturas Metropolitan Police Department*
+*Служить и защищать.*
 
-**Официальный сайт Roca Escalante Area Command:**
+**Официальный сайт столичного полицейского департамента Лас-Вентураса:**
 подразделения, состав, приказы, брифинги, пресс-центр и формуляры.
 
 <br>
 
-![Статика](https://img.shields.io/badge/stack-HTML_·_CSS_·_JS-f2c61c?style=flat-square&labelColor=100e08)
-![Без зависимостей](https://img.shields.io/badge/dependencies-none-e0a526?style=flat-square&labelColor=100e08)
-![Hosting](https://img.shields.io/badge/hosting-GitHub_Pages-f3eedd?style=flat-square&labelColor=100e08)
+[![Открыть сайт](https://img.shields.io/badge/ОТКРЫТЬ_САЙТ-LVMPD-b8932f?style=for-the-badge&labelColor=09111b)](https://weisez.github.io/REAC/?view)
+
+<br>
+
+![Статика](https://img.shields.io/badge/stack-HTML_·_CSS_·_JS-c9a24b?style=flat-square&labelColor=09111b)
+![Без зависимостей](https://img.shields.io/badge/dependencies-none-4f84c4?style=flat-square&labelColor=09111b)
+![Hosting](https://img.shields.io/badge/hosting-GitHub_Pages-e9e5da?style=flat-square&labelColor=09111b)
 
 </div>
-
-## Запуск и публикация
-
-Сайт статический. Локально: `python3 -m http.server` в папке проекта, затем http://localhost:8000.
-Публикация: залить папку в репозиторий GitHub и включить GitHub Pages.
-
-## Режим владельца (правка прямо на сайте)
-
-Откройте сайт с адресом вида `…/#edit=ВАШ_ПАРОЛЬ`. Пароль: `Roca-BvWYyuLo4Nnx` (можно сменить).
-**Смените его:** посчитайте SHA-256 нового пароля и подставьте в `ownerHash` в `js/01-core.js`.
-Репозиторий для медиатеки определяется автоматически по адресу `…github.io/РЕПОЗИТОРИЙ`.
-
-## Цвета
-
-В режиме владельца кнопка **«Цвета»**: 4 готовые схемы и отдельный выбор цвета для каждого элемента
-(фон, шапка, подвал, карточки, текст, акценты, затемнение фото, бумага документа, статусы) отдельно для
-тёмной и светлой темы, с живым предпросмотром и проверкой контраста. После «Сохранить» нажмите «Опубликовать».
-
-## Редактирование текстов
-
-В режиме правки клик по большому тексту (вступления, описания, «Карьера», «V. Специализированные направления»,
-описания зон и объектов карты) открывает редактор. Подписи и кнопки раздела карты: «✎ Тексты, подписи и обложка раздела».
-
-## Что осталось заглушками
-
-* Должностные лица (шериф и два Undersheriff) — «Имя Фамилия»; остальные должности — VACANT.
-* Адрес, девиз, история Area Command, описание зон, карта (контуры и маркеры) — помечены `[Заглушка]`.
-* Картинки (`img/`, `og.png`) остались от прототипа — заменить на свои.
