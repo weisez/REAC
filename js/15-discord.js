@@ -34,7 +34,7 @@ async function dcPaperPNG(f, text) {
   x.fillStyle = "#15181c"; x.fillRect(0, 0, W, headH);
   x.fillStyle = "#ffc72c"; x.fillRect(0, headH, W, 5);
   x.textBaseline = "alphabetic";
-  x.fillStyle = "#ffc72c"; x.font = `500 15px ${MONO}`; x.fillText("★ ROCA ESCALANTE AREA COMMAND — LVMPD ★", pad, 44);
+  x.fillStyle = "#ffc72c"; x.font = `500 15px ${MONO}`; x.fillText("★ СТОЛИЧНЫЙ ДЕПАРТАМЕНТ ПОЛИЦИИ ЛАС-ВЕНТУРАСА ★", pad, 44);
   x.fillStyle = "#f1f2f4"; x.font = `600 30px ${SER}`;
   let t = String(f.title || "Заявление"); while (x.measureText(t).width > maxW && t.length > 8) t = t.slice(0, -2) + "…";
   x.fillText(t, pad, 90);
@@ -42,7 +42,7 @@ async function dcPaperPNG(f, text) {
   x.fillStyle = "#1f1c14"; x.font = `400 ${fs}px ${SER}`;
   L.forEach((s, i) => { const b = s[0] === "\u0001"; x.font = `${b ? 600 : 400} ${fs}px ${SER}`; x.fillStyle = b ? "#7a5c00" : "#1f1c14"; x.fillText(b ? s.slice(1) : s, pad, headH + 56 + i * lh); });
   x.strokeStyle = "rgba(31,28,20,.25)"; x.lineWidth = 1; x.beginPath(); x.moveTo(pad, H - footH + 8); x.lineTo(W - pad, H - footH + 8); x.stroke();
-  x.fillStyle = "#6b665a"; x.font = `400 14px ${MONO}`; x.fillText("Оформлено на сайте Roca Escalante Area Command · " + new Date().toLocaleDateString("ru-RU"), pad, H - 30);
+  x.fillStyle = "#6b665a"; x.font = `400 14px ${MONO}`; x.fillText("Отправлено с сайта департамента · " + new Date().toLocaleDateString("ru-RU"), pad, H - 30);
   return new Promise((res) => c.toBlob(res, "image/png"));
 }
 
@@ -63,7 +63,7 @@ async function dcSendForm(btn) {
     fd.append("fields", JSON.stringify(fields)); fd.append("website", ($("#dcw") || {}).value || "");
     const png = await dcPaperPNG(f, text); if (png) fd.append("image", png, "formular.png");
     await dcPost("/form", fd);
-    toast("Заявление отправлено в Discord");
+    toast("Заявление отправлено в Discord. Ожидайте обратной связи.");
   } catch (e) { toast("Не удалось отправить: " + e.message); }
   dcBusy(btn, 0);
 }
@@ -71,8 +71,8 @@ async function dcSendForm(btn) {
 /* ---------- объявления ---------- */
 async function dcSendNote(btn) {
   const v = (id) => (($("#" + id) || {}).value || "").trim(), n = { author: v("bw"), place: v("ba"), title: v("bh"), text: v("bt"), website: v("dcw") };
-  if (n.text.length < 5) { toast("Напишите текст объявления"); return; }
-  if (!n.author) { toast("Укажите автора (звание, имя)"); return; }
+  if (n.text.length < 5) { toast("Напишите текст"); return; }
+  if (!n.author) { toast("Укажите автора (либо анонимно)"); return; }
   dcBusy(btn, 1);
   try { await dcPost("/board", n, true); $("#bt").value = ""; $("#bt").dispatchEvent(new Event("input", { bubbles: true })); toast("Отправлено на проверку. После одобрения появится на доске"); }
   catch (e) { toast("Не удалось отправить: " + e.message); }
